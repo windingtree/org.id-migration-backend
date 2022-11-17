@@ -1,7 +1,45 @@
-export interface ChainConfig {
-  name: string;
-  chainId: string;
-  blockchainType: string;
-  orgIdAddress: string;
-  providerUri: string;
+/* eslint-disable */
+/* tslint:disable */
+/*
+ * ---------------------------------------------------------------
+ * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
+ * ##                                                           ##
+ * ## AUTHOR: acacode                                           ##
+ * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
+ * ---------------------------------------------------------------
+ */
+
+/** Objet describing an error */
+export interface Error {
+  /**
+   * Error message
+   * @example "Something went wrong"
+   */
+  message: string;
 }
+
+/** Ping-pong response */
+export interface Pong {
+  /**
+   * @format date-time
+   * @example "2022-11-16T22:33:49.333+01:00"
+   */
+  time?: string;
+}
+
+/**
+ * EOA
+ * @pattern ^0x[a-fA-F0-9]{40}$
+ * @example "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+ */
+export type EthAddress = string;
+
+/**
+ * ORGiD DID
+ * @pattern ^did:orgid:([0-9])*(?::)?(0x[a-fA-F0-9]{64})+$
+ * @example "did:orgid:77:0xeae18b4ccf6dfd743dc1738c6547bc829c3384bcc2b48f98f0c9a49c5c67b2be"
+ */
+export type Did = string;
+
+/** List of ORGiDs DIDs */
+export type Dids = Did[];

@@ -22,7 +22,8 @@
     "lint:fix": "npx eslint . --ext .ts --fix && npx prettier --write .",
     "prepare": "husky install",
     "commit": "git-cz -S",
-    "redis": "docker run --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest"
+    "redis": "docker run --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest",
+    "types": "npx sta --no-client --extract-enums -p src/swagger.yaml -o src -n types.ts"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -58,6 +59,7 @@
     "husky": "^8.0.2",
     "prettier": "^2.7.1",
     "lint-staged": "^13.0.3",
+    "swagger-typescript-api": "^12.0.2",
     "typescript": "^4.8.4"
   }
 }

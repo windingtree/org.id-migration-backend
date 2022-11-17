@@ -1,7 +1,14 @@
 import { resolve } from 'path';
 import dotenv from 'dotenv';
 import YAML from 'yamljs';
-import { ChainConfig } from './types';
+
+export interface ChainConfig {
+  name: string;
+  chainId: string;
+  blockchainType: string;
+  orgIdAddress: string;
+  providerUri: string;
+}
 
 const envFilePath = resolve(process.cwd(), '.env');
 dotenv.config({ path: envFilePath });
