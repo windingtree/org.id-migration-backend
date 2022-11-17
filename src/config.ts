@@ -1,8 +1,9 @@
-import { join } from 'path';
+import { resolve } from 'path';
 import dotenv from 'dotenv';
+import YAML from 'yamljs';
 import { ChainConfig } from './types';
 
-const envFilePath = join(process.cwd(), `.env`);
+const envFilePath = resolve(process.cwd(), '.env');
 dotenv.config({ path: envFilePath });
 
 export const checkEnvVariables = (vars: string[]): void =>
@@ -19,6 +20,8 @@ checkEnvVariables([
   'REDIS_PORT',
   'REDIS_USERNAME',
   'REDIS_PASSWORD',
+  'SRC_CONTRACT',
+  'DST_CONTRACTS',
 ]);
 
 export const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -73,3 +76,11 @@ export const CHAINS: ChainConfig[] = [
 ];
 
 export const REDIS_URL = `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+
+export const SRC_CONTRACT = process.env.SRC_CONTRACT || '';
+
+export const DST_CONTRACTS = (process.env.DST_CONTRACTS || '').split(',');
+
+export const SWAGGER_DOC = YAML.load(
+  resolve(process.cwd(), 'src/swagger.yaml')
+);

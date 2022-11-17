@@ -1,9 +1,14 @@
-import express from 'express';
 import http from 'http';
+import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { Service } from 'typedi';
-import { PORT, ALLOWED_ORIGINS } from './config';
+import swaggerUI from 'swagger-ui-express';
+import openApiValidator from 'express-openapi-validator';
+import { DateTime } from 'luxon';
+import { errorMiddleware, asyncHandler } from './errors';
+import { PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
+import { getOwned } from './api/orgid';
 
 @Service()
 export class Server {
@@ -45,17 +50,41 @@ export class Server {
     this.app.use(helmet.referrerPolicy());
     this.app.use(helmet.xssFilter());
 
+    // API docs server
+    this.app.use('/docs', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOC));
+
+    // Requests and responses validator middleware
+    this.app.use(
+      openApiValidator.middleware({
+        apiSpec: SWAGGER_DOC,
+        validateResponses: true,
+      })
+    );
+
     // Routes setup
     this.setup();
+
+    // Handle errors
+    this.app.use(errorMiddleware);
   }
 
   private setup(): void {
     // Ping-pong endpoint
-    this.app.get('/test', (_, res) => {
-      res.status(200).send({
-        status: 'OK',
+    this.app.get('/api/ping', (_, res) => {
+      res.status(200).json({
+        time: DateTime.now().toISO(),
       });
     });
+
+    // Owned ORGiDs
+    this.app.get(
+      '/api/owner/:address',
+      asyncHandler(async (req, res) => {
+        const { address } = req.params;
+        const orgIds = await getOwned(address);
+        res.status(200).json(orgIds);
+      })
+    );
   }
 
   async start(): Promise<http.Server> {
