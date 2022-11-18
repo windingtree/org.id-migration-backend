@@ -1,11 +1,11 @@
 import { resolve } from 'path';
 import dotenv from 'dotenv';
 import YAML from 'yamljs';
+import { RedisOptions } from 'ioredis';
 
 export interface ChainConfig {
   name: string;
   chainId: string;
-  blockchainType: string;
   orgIdAddress: string;
   providerUri: string;
 }
@@ -28,7 +28,8 @@ checkEnvVariables([
   'REDIS_USERNAME',
   'REDIS_PASSWORD',
   'SRC_CONTRACT',
-  'DST_CONTRACTS',
+  'SRC_PROVIDER',
+  'W3S_KEY',
 ]);
 
 export const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -45,7 +46,6 @@ export const CHAINS: ChainConfig[] = [
   {
     name: 'Gnosis Chain',
     chainId: '100',
-    blockchainType: 'eip155',
     orgIdAddress: '0xb63d48e9d1e51305a17F4d95aCa3637BBC181b44',
     providerUri:
       'https://poa-xdai.gateway.pokt.network/v1/lb/0b1afa3b501711635aee21f6',
@@ -53,7 +53,6 @@ export const CHAINS: ChainConfig[] = [
   {
     name: 'Polygon',
     chainId: '137',
-    blockchainType: 'eip155',
     orgIdAddress: '0x8a093Cb94663994d19a778c7EA9161352a434c64',
     providerUri:
       'https://poly-mainnet.gateway.pokt.network/v1/lb/0b1afa3b501711635aee21f6',
@@ -61,7 +60,6 @@ export const CHAINS: ChainConfig[] = [
   {
     name: 'Goerli',
     chainId: '5',
-    blockchainType: 'eip155',
     orgIdAddress: '0xe02dF24d8dFdd37B21690DB30F4813cf6c4D9D93',
     providerUri:
       'https://eth-goerli.g.alchemy.com/v2/aw5WyUmvvU_Uf4fI8nDj51Nx0QeUJ0lr',
@@ -69,25 +67,33 @@ export const CHAINS: ChainConfig[] = [
   {
     name: 'Sokol',
     chainId: '77',
-    blockchainType: 'eip155',
     orgIdAddress: '0xDd1231c0FD9083DA42eDd2BD4f041d0a54EF7BeE',
     providerUri: 'https://sokol.poa.network',
   },
-  {
-    name: 'Columbus',
-    chainId: '502',
-    blockchainType: 'eip155',
-    orgIdAddress: '0xd8b75be9a47ffab0b5c27a143b911af7a7bf4076',
-    providerUri: 'https://columbus.camino.foundation/ext/bc/C/rpc',
-  },
 ];
 
-export const REDIS_URL = `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+export const ALLOWED_CHAINS = CHAINS.map((c) => Number(c.chainId));
+
+export const getChainById = (chainId: number | string): ChainConfig => {
+  const chain = CHAINS.find((c) => c.chainId === String(chainId));
+  if (!chain) {
+    throw new Error(`Unknown chainId: ${chainId}`);
+  }
+  return chain;
+};
+
+export const REDIS_OPTIONS: RedisOptions = {
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT || 6379),
+};
 
 export const SRC_CONTRACT = process.env.SRC_CONTRACT || '';
-
-export const DST_CONTRACTS = (process.env.DST_CONTRACTS || '').split(',');
+export const SRC_PROVIDER = process.env.SRC_PROVIDER || '';
 
 export const SWAGGER_DOC = YAML.load(
   resolve(process.cwd(), 'src/swagger.yaml')
 );
+
+export const W3S_KEY = process.env.W3S_KEY || '';

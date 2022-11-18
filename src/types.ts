@@ -43,3 +43,54 @@ export type Did = string;
 
 /** List of ORGiDs DIDs */
 export type Dids = Did[];
+
+/** In-path API /owner/{address} parameters */
+export interface ApiOwnerParams {
+  /** EOA */
+  address: EthAddress;
+}
+
+/** In-path API /did/{did} parameters */
+export interface ApiDidParams {
+  /** ORGiD DID */
+  did: Did;
+}
+
+/** In-path API /request/{id} parameters */
+export interface ApiRequestParams {
+  /** Migration request Id */
+  id: RequestId;
+}
+
+/** Migration request Id */
+export type RequestId = string;
+
+/** An ORGiD migration request */
+export interface MigrationRequest {
+  /** ORGiD DID */
+  did: Did;
+  /** Chain Id */
+  chain: 5 | 77 | 100 | 137;
+  /** Serialized ORGiD VC */
+  orgIdVc: string;
+}
+
+/** An ORGiD migration request progress state */
+export enum RequestState {
+  Requested = 'requested',
+  Progress = 'progress',
+  Failed = 'failed',
+  Completed = 'completed',
+}
+
+/** An ORGiD migration request status */
+export interface RequestStatus {
+  /** Migration request Id */
+  id: RequestId;
+  /** Timestamp when the request was created */
+  timestamp: number;
+  /** ORGiD DID */
+  did: Did;
+  /** An ORGiD migration request progress state */
+  state: RequestState;
+}

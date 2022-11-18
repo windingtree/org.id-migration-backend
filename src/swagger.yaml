@@ -25,6 +25,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /clean:
+    post:
+      description: System reset (on test only)
+      responses:
+        '200':
+          description: OK
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /owner/{address}:
     get:
       description: Returns list of owned ORGiDs DIDs
@@ -53,6 +65,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /did:
+    get:
+      description: Returns request Id of the did
+      parameters:
+        - in: query
+          name: did
+          required: true
+          schema:
+            $ref: '#/components/schemas/Did'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /request:
+    post:
+      description: Creation of migration requests job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /request/{id}:
+    get:
+      description: Returns request status by Id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/RequestId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
     bearerAuth:
@@ -63,13 +177,13 @@ components:
     Error:
       description: Objet describing an error
       type: object
-      required:
-        - message
       properties:
         message:
           description: Error message
           type: string
           example: Something went wrong
+      required:
+        - message
     Pong:
       description: Ping-pong response
       type: object
@@ -93,3 +207,73 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Did'
+    ApiOwnerParams:
+      description: In-path API /owner/{address} parameters
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/EthAddress'
+      required:
+        - address
+    ApiDidParams:
+      description: In-path API /did/{did} parameters
+      type: object
+      properties:
+        did:
+          $ref: '#/components/schemas/Did'
+      required:
+        - did
+    ApiRequestParams:
+      description: In-path API /request/{id} parameters
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+        - id
+    RequestId:
+      description: Migration request Id
+      type: string
+    MigrationRequest:
+      description: An ORGiD migration request
+      type: object
+      properties:
+        did:
+          $ref: '#/components/schemas/Did'
+        chain:
+          description: Chain Id
+          type: number
+          enum: [5, 77, 100, 137]
+        orgIdVc:
+          description: Serialized ORGiD VC
+          type: string
+      required:
+        - did
+        - chain
+        - orgIdVc
+    RequestState:
+      description: An ORGiD migration request progress state
+      type: string
+      enum:
+        - requested
+        - progress
+        - failed
+        - completed
+    RequestStatus:
+      description: An ORGiD migration request status
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/RequestId'
+        timestamp:
+          description: Timestamp when the request was created
+          type: number
+        did:
+          $ref: '#/components/schemas/Did'
+        state:
+          $ref: '#/components/schemas/RequestState'
+      required:
+        - id
+        - timestamp
+        - did
+        - state

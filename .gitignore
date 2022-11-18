@@ -6,3 +6,4 @@ dist
 .eslintcache
 .npmrc
 *.log
+temp

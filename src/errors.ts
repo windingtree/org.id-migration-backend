@@ -20,8 +20,3 @@ export const errorMiddleware = (
     message: error.message || 'Unknown server error',
   });
 };
-
-export const asyncHandler =
-  (cb: (req: Request, res: Response, next: NextFunction) => void) =>
-  (req: Request, res: Response, next: NextFunction) =>
-    Promise.resolve(cb(req, res, next)).catch(next);

@@ -6,9 +6,24 @@ import { Service } from 'typedi';
 import swaggerUI from 'swagger-ui-express';
 import openApiValidator from 'express-openapi-validator';
 import { DateTime } from 'luxon';
-import { errorMiddleware, asyncHandler } from './errors';
+import { asyncHandler } from './utils';
+import {
+  ApiOwnerParams,
+  ApiDidParams,
+  ApiRequestParams,
+  MigrationRequest,
+  RequestStatus,
+} from './types';
+import { errorMiddleware } from './errors';
 import { PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
 import { getOwned } from './api/orgid';
+import {
+  clean,
+  addJob,
+  getRequestByDid,
+  getJobStatus,
+  handleJobs,
+} from './api/request';
 
 @Service()
 export class Server {
@@ -53,6 +68,9 @@ export class Server {
     // API docs server
     this.app.use('/docs', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOC));
 
+    // Body-parsers middleware
+    this.app.use(express.json());
+
     // Requests and responses validator middleware
     this.app.use(
       openApiValidator.middleware({
@@ -60,6 +78,9 @@ export class Server {
         validateResponses: true,
       })
     );
+
+    // Process jobs
+    handleJobs();
 
     // Routes setup
     this.setup();
@@ -76,14 +97,58 @@ export class Server {
       });
     });
 
+    // System reset
+    this.app.post(
+      '/api/clean',
+      asyncHandler(async (req, res) => {
+        await clean();
+        res.status(200).send();
+      })
+    );
+
     // Owned ORGiDs
     this.app.get(
       '/api/owner/:address',
-      asyncHandler(async (req, res) => {
+      asyncHandler<ApiOwnerParams>(async (req, res) => {
         const { address } = req.params;
         const orgIds = await getOwned(address);
         res.status(200).json(orgIds);
       })
+    );
+
+    // Migration requests
+    this.app.post(
+      '/api/request',
+      asyncHandler<unknown, MigrationRequest, unknown, RequestStatus>(
+        async (req, res) => {
+          const status = await addJob(req.body);
+          res.status(200).json(status);
+        }
+      )
+    );
+
+    // Request status by Id
+    this.app.get(
+      '/api/request/:id',
+      asyncHandler<ApiRequestParams, unknown, unknown, RequestStatus>(
+        async (req, res) => {
+          const { id } = req.params;
+          const status = await getJobStatus(id);
+          res.status(200).json(status);
+        }
+      )
+    );
+
+    // Request status by DID
+    this.app.get(
+      '/api/did',
+      asyncHandler<unknown, unknown, ApiDidParams, RequestStatus>(
+        async (req, res) => {
+          const { did } = req.query;
+          const status = await getRequestByDid(did);
+          res.status(200).json(status);
+        }
+      )
     );
   }
 
