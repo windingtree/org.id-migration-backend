@@ -13,6 +13,7 @@ cp ./.env.example ./.env
 ## Start in development environment
 
 ```bash
+./scripts/redis.sh
 yarn start:dev
 ```
 
@@ -21,5 +22,6 @@ yarn start:dev
 > Creation of the application build is required for the production environment
 
 ```bash
+yarn build
 yarn start
 ```

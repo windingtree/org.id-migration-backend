@@ -12,10 +12,13 @@ import { ApiError } from '../errors';
 import { REDIS_OPTIONS } from '../config';
 import { getDstContract, validateBase } from './orgid';
 import { addJsonToIpfs } from '../ipfs';
+import Logger from '../logger';
+
+const logger = Logger('request');
 
 const queueName = 'migration';
 
-const connection = new IORedis({
+export const connection = new IORedis({
   ...REDIS_OPTIONS,
   maxRetriesPerRequest: null,
 });
@@ -25,10 +28,12 @@ export const migrationQueue = new Queue(queueName, {
 });
 
 export const requests = new Level<string, string>(`requests.level`);
+logger.info('requests.level DB connected');
 
 export const clean = async (): Promise<void> => {
   await migrationQueue.obliterate();
   await requests.clear();
+  logger.debug('Queue and requests DB are cleared');
 };
 
 export const getState = async (job: Job): Promise<RequestState> => {
@@ -67,8 +72,10 @@ export const addJob = async (
   }
 
   await validateBase(request);
+  logger.debug(`Request for ${request.did} has been validated`);
 
   const job = await migrationQueue.add('migrate', request);
+  logger.debug(`Request for ${request} has been added to the queue`);
 
   if (!job.id) {
     throw new ApiError(500, 'Request add failure');
@@ -76,14 +83,15 @@ export const addJob = async (
 
   await requests.put(request.did, job.id);
 
-  const state = await getState(job);
-
-  return {
+  const requestStatus = {
     id: job.id,
     timestamp: job.timestamp,
     did: request.did,
-    state,
+    state: await getState(job),
   };
+  logger.debug('requestState', requestStatus);
+
+  return requestStatus;
 };
 
 // Returns job status by Id
@@ -94,14 +102,15 @@ export const getJobStatus = async (id: string): Promise<RequestStatus> => {
     throw new ApiError(404, 'Not Found');
   }
 
-  const state = await getState(job);
-
-  return {
+  const requestStatus = {
     id: job.id,
     timestamp: job.timestamp,
     did: job.data.did,
-    state,
+    state: await getState(job),
   };
+  logger.debug('requestState', requestStatus);
+
+  return requestStatus;
 };
 
 // Returns a request job by DID
@@ -119,7 +128,7 @@ export const handleJobs = async (): Promise<void> => {
     const worker = new Worker(
       queueName,
       async (job: Job<MigrationRequest>): Promise<void> => {
-        // console.log('Started job:', job);
+        logger.debug('Started job:', job.id);
 
         const vc = await validateBase(job.data);
 
@@ -160,13 +169,16 @@ export const handleJobs = async (): Promise<void> => {
         }
 
         await verifyVC(vc as SignedVC, verificationMethod.blockchainAccountId);
+        logger.debug(`ORGiD VC of ${job.data.did} has been validated`);
 
         // Send createOrgIdFor(bytes32,string,address,string[])
         const { network, orgId } = parseDid(vc.credentialSubject.id);
-        const dstContract = getDstContract(network);
-        const cid = addJsonToIpfs(vc, `${orgId}.json`);
+        const cid = await addJsonToIpfs(vc, `${orgId}.json`);
+        logger.debug(`ORGiD VC of ${orgId} has been deployed to ipfs://${cid}`);
 
+        const dstContract = getDstContract(network);
         await dstContract.createOrgIdFor(orgId, `ipfs://${cid}`, owner, []);
+        logger.debug(`ORGiD ${orgId} has been registered`);
       },
       {
         connection,
@@ -175,13 +187,13 @@ export const handleJobs = async (): Promise<void> => {
     );
 
     worker.on('completed', (job: Job) => {
-      // console.log('Completed job:', job);
+      logger.debug('Completed job:', job.id);
     });
 
     worker.on('failed', (job: Job) => {
-      // console.log('Failed job:', job);
+      logger.debug('Failed job:', job.id);
     });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };

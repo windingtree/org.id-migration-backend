@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import Logger from './logger';
+
+const logger = Logger('Express error');
 
 export class ApiError extends Error {
   public status: number;
@@ -15,7 +18,7 @@ export const errorMiddleware = (
   res: Response,
   _next: NextFunction
 ) => {
-  console.log(error);
+  logger.error(error);
   res.status(error.status || 500).json({
     message: error.message || 'Unknown server error',
   });

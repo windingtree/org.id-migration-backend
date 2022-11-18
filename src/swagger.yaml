@@ -9,16 +9,16 @@ servers:
   - url: http://localhost:3333/api
     description: Local Testing server
 paths:
-  /ping:
+  /health:
     get:
-      description: Ping-pong
+      description: Service health report
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pong'
+                $ref: '#/components/schemas/Health'
         '500':
           description: Internal Server Error
           content:
@@ -184,14 +184,27 @@ components:
           example: Something went wrong
       required:
         - message
-    Pong:
-      description: Ping-pong response
+    Health:
+      description: Health response
       type: object
       properties:
         time:
+          description: Current server time
           type: string
           format: date-time
           example: '2022-11-16T22:33:49.333+01:00'
+        commit:
+          description: Actual git commit hash
+          type: string
+          example: '7edb2b9e2204f908d1b03f2c2872b39f29b31bc5'
+        redis:
+          description: Redis DB connection status
+          type: string
+          example: 'ready'
+      required:
+        - time
+        - commit
+        - redis
     EthAddress:
       description: EOA
       type: string

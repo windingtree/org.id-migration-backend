@@ -18,13 +18,24 @@ export interface Error {
   message: string;
 }
 
-/** Ping-pong response */
-export interface Pong {
+/** Health response */
+export interface Health {
   /**
+   * Current server time
    * @format date-time
    * @example "2022-11-16T22:33:49.333+01:00"
    */
-  time?: string;
+  time: string;
+  /**
+   * Actual git commit hash
+   * @example "7edb2b9e2204f908d1b03f2c2872b39f29b31bc5"
+   */
+  commit: string;
+  /**
+   * Redis DB connection status
+   * @example "connected"
+   */
+  redis: string;
 }
 
 /**

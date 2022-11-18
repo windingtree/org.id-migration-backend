@@ -5,17 +5,21 @@ import cors from 'cors';
 import { Service } from 'typedi';
 import swaggerUI from 'swagger-ui-express';
 import openApiValidator from 'express-openapi-validator';
-import { DateTime } from 'luxon';
-import { asyncHandler } from './utils';
 import {
   ApiOwnerParams,
   ApiDidParams,
   ApiRequestParams,
   MigrationRequest,
   RequestStatus,
+  Health,
 } from './types';
-import { errorMiddleware } from './errors';
-import { PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
+import { NODE_ENV, PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
+import { ApiError, errorMiddleware } from './errors';
+import { asyncHandler, expressLogger } from './utils';
+import Logger from './logger';
+
+// APIs
+import { getHealthReport } from './api/health';
 import { getOwned } from './api/orgid';
 import {
   clean,
@@ -24,6 +28,8 @@ import {
   getJobStatus,
   handleJobs,
 } from './api/request';
+
+const logger = Logger('server');
 
 @Service()
 export class Server {
@@ -65,6 +71,9 @@ export class Server {
     this.app.use(helmet.referrerPolicy());
     this.app.use(helmet.xssFilter());
 
+    // Enable logger
+    this.app.use(expressLogger);
+
     // API docs server
     this.app.use('/docs', swaggerUI.serve, swaggerUI.setup(SWAGGER_DOC));
 
@@ -90,17 +99,22 @@ export class Server {
   }
 
   private setup(): void {
-    // Ping-pong endpoint
-    this.app.get('/api/ping', (_, res) => {
-      res.status(200).json({
-        time: DateTime.now().toISO(),
-      });
-    });
+    // Health endpoint
+    this.app.get(
+      '/api/health',
+      asyncHandler<unknown, unknown, unknown, Health>(async (_, res) => {
+        const report = await getHealthReport();
+        res.status(200).json(report);
+      })
+    );
 
     // System reset
     this.app.post(
       '/api/clean',
-      asyncHandler(async (req, res) => {
+      asyncHandler(async (_req, res) => {
+        if (NODE_ENV !== 'development') {
+          throw new ApiError(405, 'Not Allowed');
+        }
         await clean();
         res.status(200).send();
       })
@@ -156,11 +170,12 @@ export class Server {
     return await new Promise((resolve, reject) => {
       try {
         this.server = this.app.listen(PORT, () => {
-          console.log(`Server listening on port ${PORT}`);
+          logger.info(`Server listening on port ${PORT}`);
           resolve(this.server);
         });
-      } catch (e) {
-        reject(e);
+      } catch (error) {
+        logger.error(error);
+        reject(error);
       }
     });
   }
@@ -170,8 +185,9 @@ export class Server {
       try {
         this.server.once('close', resolve);
         this.server.close();
-      } catch (e) {
-        reject(e);
+      } catch (error) {
+        logger.error(error);
+        reject(error);
       }
     });
   }

@@ -2,9 +2,12 @@
 import 'reflect-metadata';
 import { Container } from 'typedi';
 import { Server } from './server';
+import Logger from './logger';
+
+const logger = Logger('index');
 
 process.once('unhandledRejection', async (error) => {
-  console.log(error);
+  logger.error(error);
   process.exit(1);
 });
 
@@ -17,11 +20,12 @@ const main = async (): Promise<void> => {
     await server.stop();
   });
 
-  httpServer.on('error', (err) => {
-    // @todo log the error
+  httpServer.on('error', (error) => {
+    logger.error(error);
   });
 };
 
 export default main().catch(async (err) => {
+  logger.info('Application exit');
   process.exit(1);
 });
