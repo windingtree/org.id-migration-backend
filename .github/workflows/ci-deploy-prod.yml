@@ -1,0 +1,48 @@
+name: ci-deploy-prod
+env:
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+on:
+  # Triggers the workflow on push events only.
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to prod environment
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" | base64 -d > ~/.ssh/ed25519
+          chmod 600 ~/.ssh/ed25519
+          cat >>~/.ssh/config <<END
+          Host wt_server
+            HostName $SSH_HOST
+            Port $SSH_PORT
+            User $SSH_USER
+            IdentityFile ~/.ssh/ed25519
+            StrictHostKeyChecking no
+          END
+
+      - name: Setup SSH passphrase
+        env:
+          SSH_PASSPHRASE: ${{secrets.SSH_PASSPHRASE}}
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          echo 'echo $SSH_PASSPHRASE' > ~/.ssh_askpass && chmod +x ~/.ssh_askpass
+          cat ~/.ssh/ed25519 | tr -d '\r' | DISPLAY=None SSH_ASKPASS=~/.ssh_askpass ssh-add - >/dev/null
+
+      - name: Run deploy script via SSH
+        run: ssh wt_server "~/deploy_latest.sh"
