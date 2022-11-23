@@ -12,6 +12,7 @@ import {
   MigrationRequest,
   RequestStatus,
   Health,
+  OrgJsonString,
 } from './types';
 import { NODE_ENV, PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
 import { ApiError, errorMiddleware } from './errors';
@@ -20,7 +21,7 @@ import Logger from './logger';
 
 // APIs
 import { getHealthReport } from './api/health';
-import { getOwnedWithState } from './api/orgid';
+import { getOrgJsonStringByDid, getOwnedWithState } from './api/orgid';
 import {
   clean,
   addJob,
@@ -130,6 +131,18 @@ export class Server {
       })
     );
 
+    // Request status by DID
+    this.app.get(
+      '/api/did',
+      asyncHandler<unknown, unknown, ApiDidParams, OrgJsonString>(
+        async (req, res) => {
+          const { did } = req.query;
+          const orgJsonString = await getOrgJsonStringByDid(did);
+          res.status(200).send(orgJsonString);
+        }
+      )
+    );
+
     // Migration requests
     this.app.post(
       '/api/request',
@@ -143,7 +156,7 @@ export class Server {
 
     // Request status by Id
     this.app.get(
-      '/api/request/:id',
+      '/api/request/id/:id',
       asyncHandler<ApiRequestParams, unknown, unknown, RequestStatus>(
         async (req, res) => {
           const { id } = req.params;
@@ -155,7 +168,7 @@ export class Server {
 
     // Request status by DID
     this.app.get(
-      '/api/did',
+      '/api/request/did',
       asyncHandler<unknown, unknown, ApiDidParams, RequestStatus>(
         async (req, res) => {
           const { did } = req.query;

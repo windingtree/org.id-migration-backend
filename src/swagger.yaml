@@ -73,7 +73,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /did:
     get:
-      description: Returns request Id of the did
+      description: Returns ORG.JSON of the DID
       parameters:
         - in: query
           name: did
@@ -84,9 +84,9 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            plain/text:
               schema:
-                $ref: '#/components/schemas/RequestStatus'
+                $ref: '#/components/schemas/OrgJsonString'
         '400':
           description: Bad Request
           content:
@@ -139,7 +139,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /request/{id}:
+  /request/id/{id}:
     get:
       description: Returns request status by Id
       parameters:
@@ -148,6 +148,40 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/RequestId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /request/did:
+    get:
+      description: Returns request status of the did
+      parameters:
+        - in: query
+          name: did
+          required: true
+          schema:
+            $ref: '#/components/schemas/Did'
       responses:
         '200':
           description: OK
@@ -308,3 +342,6 @@ components:
         - timestamp
         - did
         - state
+    OrgJsonString:
+      description: Serialized ORG.JSON doc
+      type: string

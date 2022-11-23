@@ -114,3 +114,6 @@ export interface RequestStatus {
   /** An ORGiD migration request progress state */
   state: RequestState;
 }
+
+/** Serialized ORG.JSON doc */
+export type OrgJsonString = string;

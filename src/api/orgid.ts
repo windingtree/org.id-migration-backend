@@ -48,6 +48,11 @@ export const getDstContract = (chainId: number | string): Contract => {
   return new Contract(chain.orgIdAddress, destOrgIdApi, provider);
 };
 
+export const getOrgJsonStringByDid = async (query: string): Promise<string> => {
+  const { orgId } = parseDid(query);
+  return JSON.stringify((await source.get(orgId)).orgJson);
+};
+
 // Returns a list of ORGiDs DIDs owned by address
 export const getOwned = async (owner: string): Promise<string[]> =>
   (await source.values().all())
