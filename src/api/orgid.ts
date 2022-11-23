@@ -2,7 +2,7 @@ import { Level } from 'level';
 import { utils, providers, Contract } from 'ethers';
 import { ORGJSONVCNFT } from '@windingtree/org.json-schema/types/orgVc';
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
-import { MigrationRequest } from '../types';
+import { MigrationRequest, Dids, RequestState } from '../types';
 import { ApiError } from '../errors';
 import {
   SRC_CONTRACT,
@@ -10,6 +10,7 @@ import {
   ALLOWED_CHAINS,
   getChainById,
 } from '../config';
+import { getRequestByDid } from './request';
 
 export interface OrgId {
   orgId: string;
@@ -54,6 +55,28 @@ export const getOwned = async (owner: string): Promise<string[]> =>
       (record) => utils.getAddress(record.owner) === utils.getAddress(owner)
     )
     .map((record) => `did:orgid:${record.orgId}`);
+
+// Returns a list of ORGiDs DIDs with request state info
+export const getOwnedWithState = async (owner: string): Promise<Dids> => {
+  const owned = await getOwned(owner);
+  if (owned.length === 0) {
+    throw new ApiError(404, 'Not Found');
+  }
+  return await Promise.all(
+    owned.map(async (did) => {
+      let state: RequestState;
+      try {
+        state = (await getRequestByDid(did)).state;
+      } catch {
+        state = RequestState.Ready;
+      }
+      return {
+        did,
+        state,
+      };
+    })
+  );
+};
 
 export const validateBase = async (
   request: MigrationRequest

@@ -20,7 +20,7 @@ import Logger from './logger';
 
 // APIs
 import { getHealthReport } from './api/health';
-import { getOwned } from './api/orgid';
+import { getOwnedWithState } from './api/orgid';
 import {
   clean,
   addJob,
@@ -122,10 +122,10 @@ export class Server {
 
     // Owned ORGiDs
     this.app.get(
-      '/api/owner/:address',
+      '/api/dids/:owner',
       asyncHandler<ApiOwnerParams>(async (req, res) => {
-        const { address } = req.params;
-        const orgIds = await getOwned(address);
+        const { owner } = req.params;
+        const orgIds = await getOwnedWithState(owner);
         res.status(200).json(orgIds);
       })
     );

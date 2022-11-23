@@ -37,12 +37,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /owner/{address}:
+  /dids/{owner}:
     get:
       description: Returns list of owned ORGiDs DIDs
       parameters:
         - in: path
-          name: address
+          name: owner
           required: true
           schema:
             $ref: '#/components/schemas/EthAddress'
@@ -55,6 +55,12 @@ paths:
                 $ref: '#/components/schemas/Dids'
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
@@ -215,19 +221,30 @@ components:
       type: string
       pattern: ^did:orgid:([0-9])*(?::)?(0x[a-fA-F0-9]{64})+$
       example: did:orgid:77:0xeae18b4ccf6dfd743dc1738c6547bc829c3384bcc2b48f98f0c9a49c5c67b2be
+    DidWithState:
+      description: List of ORGiDs DIDs
+      type: object
+      properties:
+        did:
+          $ref: '#/components/schemas/Did'
+        state:
+          $ref: '#/components/schemas/RequestState'
+      required:
+        - did
+        - state
     Dids:
       description: List of ORGiDs DIDs
       type: array
       items:
-        $ref: '#/components/schemas/Did'
+        $ref: '#/components/schemas/DidWithState'
     ApiOwnerParams:
       description: In-path API /owner/{address} parameters
       type: object
       properties:
-        address:
+        owner:
           $ref: '#/components/schemas/EthAddress'
       required:
-        - address
+        - owner
     ApiDidParams:
       description: In-path API /did/{did} parameters
       type: object
@@ -268,6 +285,7 @@ components:
       description: An ORGiD migration request progress state
       type: string
       enum:
+        - ready
         - requested
         - progress
         - failed

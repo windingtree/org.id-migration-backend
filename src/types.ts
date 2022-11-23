@@ -33,7 +33,7 @@ export interface Health {
   commit: string;
   /**
    * Redis DB connection status
-   * @example "connected"
+   * @example "ready"
    */
   redis: string;
 }
@@ -53,12 +53,20 @@ export type EthAddress = string;
 export type Did = string;
 
 /** List of ORGiDs DIDs */
-export type Dids = Did[];
+export interface DidWithState {
+  /** ORGiD DID */
+  did: Did;
+  /** An ORGiD migration request progress state */
+  state: RequestState;
+}
+
+/** List of ORGiDs DIDs */
+export type Dids = DidWithState[];
 
 /** In-path API /owner/{address} parameters */
 export interface ApiOwnerParams {
   /** EOA */
-  address: EthAddress;
+  owner: EthAddress;
 }
 
 /** In-path API /did/{did} parameters */
@@ -88,6 +96,7 @@ export interface MigrationRequest {
 
 /** An ORGiD migration request progress state */
 export enum RequestState {
+  Ready = 'ready',
   Requested = 'requested',
   Progress = 'progress',
   Failed = 'failed',
