@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
+docker stop $(docker ps -a -q)
+
 sudo mkdir -p /sys/fs/cgroup/systemd
 
 {
