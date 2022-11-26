@@ -1,5 +1,5 @@
 import { Level } from 'level';
-import { utils, providers, Contract } from 'ethers';
+import { utils, providers, Contract, Wallet } from 'ethers';
 import { ORGJSONVCNFT } from '@windingtree/org.json-schema/types/orgVc';
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
 import { MigrationRequest, Dids, RequestState } from '../types';
@@ -11,6 +11,7 @@ import {
   getChainById,
 } from '../config';
 import { getRequestByDid } from './request';
+import { MNEMONIC } from '../config';
 
 export interface OrgId {
   orgId: string;
@@ -45,7 +46,12 @@ export const getSrcContract = (): Contract => {
 export const getDstContract = (chainId: number | string): Contract => {
   const chain = getChainById(chainId);
   const provider = new providers.JsonRpcProvider(chain.providerUri);
-  return new Contract(chain.orgIdAddress, destOrgIdApi, provider);
+  if (!MNEMONIC) {
+    throw new Error('Migrator mnemonic not found');
+  }
+  const wallet = Wallet.fromMnemonic(MNEMONIC);
+  const contract = new Contract(chain.orgIdAddress, destOrgIdApi, provider);
+  return contract.connect(wallet);
 };
 
 export const getOrgJsonStringByDid = async (query: string): Promise<string> => {

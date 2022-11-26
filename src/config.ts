@@ -30,6 +30,7 @@ checkEnvVariables([
   'SRC_CONTRACT',
   'SRC_PROVIDER',
   'W3S_KEY',
+  'MIGRATOR_MNEMONIC',
 ]);
 
 export const NODE_ENV = process.env.NODE_ENV || '';
@@ -99,3 +100,5 @@ export const SWAGGER_DOC = YAML.load(
 );
 
 export const W3S_KEY = process.env.W3S_KEY || '';
+
+export const MNEMONIC = process.env.MIGRATOR_MNEMONIC;
