@@ -8,9 +8,9 @@ info:
 servers:
   - url: http://localhost:3333/api
     description: Local Testing server
-  - url: https://api.test-orgid-migration.windingtree.com
+  - url: https://api.test-orgid-migration.windingtree.com/api
     description: Staging server
-  - url: https://api.orgid-migration.windingtree.com
+  - url: https://api.orgid-migration.windingtree.com/api
     description: Production server
 paths:
   /health:
