@@ -117,3 +117,9 @@ export interface RequestStatus {
 
 /** Serialized ORG.JSON doc */
 export type OrgJsonString = string;
+
+/** File upload API response */
+export interface UploadedFile {
+  /** Url of the uploaded file */
+  url: string;
+}

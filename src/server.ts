@@ -1,10 +1,12 @@
 import http from 'http';
+import os from 'os';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { Service } from 'typedi';
 import swaggerUI from 'swagger-ui-express';
 import openApiValidator from 'express-openapi-validator';
+import multer from 'multer';
 import {
   ApiOwnerParams,
   ApiDidParams,
@@ -13,6 +15,7 @@ import {
   RequestStatus,
   Health,
   OrgJsonString,
+  UploadedFile,
 } from './types';
 import { NODE_ENV, PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
 import { ApiError, errorMiddleware } from './errors';
@@ -29,8 +32,12 @@ import {
   getJobStatus,
   handleJobs,
 } from './api/request';
+import { processUpload } from './api/file';
 
 const logger = Logger('server');
+
+// Files uploader
+const upload = multer({ dest: os.tmpdir(), limits: { fileSize: 2000000 } });
 
 @Service()
 export class Server {
@@ -80,6 +87,7 @@ export class Server {
 
     // Body-parsers middleware
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
 
     // Requests and responses validator middleware
     this.app.use(
@@ -119,6 +127,18 @@ export class Server {
         await clean();
         res.status(200).send();
       })
+    );
+
+    // Files upload
+    this.app.post(
+      '/api/file',
+      upload.single('file'),
+      asyncHandler<unknown, unknown, unknown, UploadedFile>(
+        async (req, res) => {
+          const uploadedFile = await processUpload(req.files?.['file']);
+          res.status(200).json(uploadedFile);
+        }
+      )
     );
 
     // Owned ORGiDs

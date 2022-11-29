@@ -1,4 +1,10 @@
-import { Web3Storage, Filelike, File, Blob } from 'web3.storage';
+import {
+  Web3Storage,
+  Filelike,
+  File,
+  Blob,
+  getFilesFromPath,
+} from 'web3.storage';
 import { W3S_KEY } from './config';
 
 export interface IpfsApiAddResponse {
@@ -22,6 +28,15 @@ export const addJsonToIpfs = async (
 ): Promise<string> => {
   const client = createWeb3StorageClient();
   const files = makeFileObject(obj, name);
+  const cid = await client.put(files as Iterable<Filelike>, {
+    wrapWithDirectory: false,
+  });
+  return cid;
+};
+
+export const addFilesToIpfs = async (path: string): Promise<string> => {
+  const client = createWeb3StorageClient();
+  const files = await getFilesFromPath([path]);
   const cid = await client.put(files as Iterable<Filelike>, {
     wrapWithDirectory: false,
   });

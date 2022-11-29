@@ -41,6 +41,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /file:
+    post:
+      description: Files upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadedFile'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /dids/{owner}:
     get:
       description: Returns list of owned ORGiDs DIDs
@@ -349,3 +375,12 @@ components:
     OrgJsonString:
       description: Serialized ORG.JSON doc
       type: string
+    UploadedFile:
+      description: File upload API response
+      type: object
+      properties:
+        url:
+          description: Url of the uploaded file
+          type: string
+      required:
+        - url

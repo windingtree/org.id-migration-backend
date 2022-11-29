@@ -5,19 +5,27 @@ import Logger from './logger';
 const logger = Logger('express');
 
 export const asyncHandler =
-  <Params = unknown, Body = unknown, Q = Query, Resp = unknown>(
-    cb: (
-      req: Request<Params, Resp, Body, Q>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    <
+      Params = unknown,
+      Body = unknown,
+      Q = Query,
+      Resp = unknown,
+      Locals extends Record<string, any> = Record<string, any>
+    >(
+      cb: (
+        req: Request<Params, Resp, Body, Q, Locals>,
+        res: Response<Resp>,
+        next: NextFunction
+      ) => void
+    ) =>
+    (
+      req: Request<Params, Resp, Body, Q, Locals>,
       res: Response<Resp>,
       next: NextFunction
-    ) => void
-  ) =>
-  (
-    req: Request<Params, Resp, Body, Q>,
-    res: Response<Resp>,
-    next: NextFunction
-  ) =>
-    Promise.resolve(cb(req, res, next)).catch(next);
+    ) =>
+      Promise.resolve(cb(req, res, next)).catch(next);
 
 export const expressLogger = (
   req: Request,
