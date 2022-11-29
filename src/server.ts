@@ -37,7 +37,7 @@ import { processUpload } from './api/file';
 const logger = Logger('server');
 
 // Files uploader
-const upload = multer({ dest: os.tmpdir(), limits: { fileSize: 2000000 } });
+const upload = multer({ limits: { fileSize: 2000000 } });
 
 @Service()
 export class Server {
@@ -133,12 +133,10 @@ export class Server {
     this.app.post(
       '/api/file',
       upload.single('file'),
-      asyncHandler<unknown, unknown, unknown, UploadedFile>(
-        async (req, res) => {
-          const uploadedFile = await processUpload(req.files?.['file']);
-          res.status(200).json(uploadedFile);
-        }
-      )
+      asyncHandler(async (req, res) => {
+        const uploadedFile = await processUpload(req);
+        res.status(200).json(uploadedFile);
+      })
     );
 
     // Owned ORGiDs

@@ -1,15 +1,14 @@
+import { Request } from 'express';
 import { UploadedFile } from '../types';
 import { ApiError } from '../errors';
-import { addFilesToIpfs } from '../ipfs';
+import { addBufferToIpfs } from '../ipfs';
 
-export const processUpload = async (
-  files?: Express.Multer.File[]
-): Promise<UploadedFile> => {
-  if (!files) {
-    throw new ApiError(400, 'Files not been uploaded');
+export const processUpload = async (req: Request): Promise<UploadedFile> => {
+  if (!req.files || req.files.length === 0) {
+    throw new ApiError(400, 'File not been uploaded');
   }
-  const file = files[0];
-  const cid = await addFilesToIpfs(file.destination);
+  const file = req.files[0];
+  const cid = await addBufferToIpfs(file.buffer, file.originalname);
   return {
     url: `https://w3s.link/ipfs/${cid}`,
   };

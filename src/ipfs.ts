@@ -42,3 +42,16 @@ export const addFilesToIpfs = async (path: string): Promise<string> => {
   });
   return cid;
 };
+
+export const addBufferToIpfs = async (
+  buffer: Buffer,
+  name: string
+): Promise<string> => {
+  const client = createWeb3StorageClient();
+  const blob = new Blob([buffer]);
+  const cid = await client.put([blob] as Iterable<Filelike>, {
+    wrapWithDirectory: false,
+    name,
+  });
+  return cid;
+};
