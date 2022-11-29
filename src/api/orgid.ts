@@ -50,8 +50,12 @@ export const getDstContract = (chainId: number | string): Contract => {
     throw new Error('Migrator mnemonic not found');
   }
   const wallet = Wallet.fromMnemonic(MNEMONIC);
-  const contract = new Contract(chain.orgIdAddress, destOrgIdApi, provider);
-  return contract.connect(wallet);
+  const contract = new Contract(
+    chain.orgIdAddress,
+    destOrgIdApi,
+    wallet.connect(provider)
+  );
+  return contract;
 };
 
 export const getOrgJsonStringByDid = async (query: string): Promise<string> => {

@@ -128,57 +128,68 @@ export const handleJobs = async (): Promise<void> => {
     const worker = new Worker(
       queueName,
       async (job: Job<MigrationRequest>): Promise<void> => {
-        logger.debug('Started job:', job.id);
+        try {
+          logger.debug('Started job:', job.id);
 
-        const vc = await validateBase(job.data);
+          const vc = await validateBase(job.data);
+          logger.debug('Vc structure validated');
 
-        if (!vc.proof) {
-          throw new ApiError(400, 'Invalid ORGiD VC: proof not found');
-        }
+          if (!vc.proof) {
+            throw new ApiError(400, 'Invalid ORGiD VC: proof not found');
+          }
 
-        const verificationMethodId = vc.proof.verificationMethod;
+          const verificationMethodId = vc.proof.verificationMethod;
 
-        if (!verificationMethodId) {
-          throw new ApiError(
-            400,
-            'Invalid ORGiD VC: verificationMethod Id not found'
+          if (!verificationMethodId) {
+            throw new ApiError(
+              400,
+              'Invalid ORGiD VC: verificationMethod Id not found'
+            );
+          }
+
+          const verificationMethod =
+            vc.credentialSubject.verificationMethod?.find(
+              (v) => v.id === verificationMethodId
+            );
+
+          if (!verificationMethod || !verificationMethod.blockchainAccountId) {
+            throw new ApiError(
+              400,
+              'Invalid ORGiD VC: Invalid verificationMethod'
+            );
+          }
+
+          const { accountAddress: owner } = parseBlockchainAccountId(
+            verificationMethod.blockchainAccountId
           );
-        }
 
-        const verificationMethod =
-          vc.credentialSubject.verificationMethod?.find(
-            (v) => v.id === verificationMethodId
+          if (!owner) {
+            throw new ApiError(
+              400,
+              'Invalid ORGiD VC: Invalid blockchainAccountId of verificationMethod'
+            );
+          }
+
+          await verifyVC(
+            vc as SignedVC,
+            verificationMethod.blockchainAccountId
+          );
+          logger.debug(`ORGiD VC of ${job.data.did} has been validated`);
+
+          // Send createOrgIdFor(bytes32,string,address,string[])
+          const { network, orgId } = parseDid(vc.credentialSubject.id);
+          const cid = await addJsonToIpfs(vc, `${orgId}.json`);
+          logger.debug(
+            `ORGiD VC of ${orgId} has been deployed to ipfs://${cid}`
           );
 
-        if (!verificationMethod || !verificationMethod.blockchainAccountId) {
-          throw new ApiError(
-            400,
-            'Invalid ORGiD VC: Invalid verificationMethod'
-          );
+          const dstContract = getDstContract(network);
+          await dstContract.createOrgIdFor(orgId, `ipfs://${cid}`, owner, []);
+          logger.debug(`ORGiD ${orgId} has been registered`);
+        } catch (error) {
+          logger.error(error);
+          throw error;
         }
-
-        const { accountAddress: owner } = parseBlockchainAccountId(
-          verificationMethod.blockchainAccountId
-        );
-
-        if (owner) {
-          throw new ApiError(
-            400,
-            'Invalid ORGiD VC: Invalid blockchainAccountId of verificationMethod'
-          );
-        }
-
-        await verifyVC(vc as SignedVC, verificationMethod.blockchainAccountId);
-        logger.debug(`ORGiD VC of ${job.data.did} has been validated`);
-
-        // Send createOrgIdFor(bytes32,string,address,string[])
-        const { network, orgId } = parseDid(vc.credentialSubject.id);
-        const cid = await addJsonToIpfs(vc, `${orgId}.json`);
-        logger.debug(`ORGiD VC of ${orgId} has been deployed to ipfs://${cid}`);
-
-        const dstContract = getDstContract(network);
-        await dstContract.createOrgIdFor(orgId, `ipfs://${cid}`, owner, []);
-        logger.debug(`ORGiD ${orgId} has been registered`);
       },
       {
         connection,
