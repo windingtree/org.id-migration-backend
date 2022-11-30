@@ -1,5 +1,4 @@
 import http from 'http';
-import os from 'os';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -11,11 +10,11 @@ import {
   ApiOwnerParams,
   ApiDidParams,
   ApiRequestParams,
+  ApiFileUriParams,
   MigrationRequest,
   RequestStatus,
   Health,
   OrgJsonString,
-  UploadedFile,
 } from './types';
 import { NODE_ENV, PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
 import { ApiError, errorMiddleware } from './errors';
@@ -32,7 +31,7 @@ import {
   getJobStatus,
   handleJobs,
 } from './api/request';
-import { processUpload } from './api/file';
+import { processUpload, processUriUpload } from './api/file';
 
 const logger = Logger('server');
 
@@ -135,6 +134,14 @@ export class Server {
       upload.single('file'),
       asyncHandler(async (req, res) => {
         const uploadedFile = await processUpload(req);
+        res.status(200).json(uploadedFile);
+      })
+    );
+    this.app.post(
+      '/api/fileUri',
+      asyncHandler<unknown, ApiFileUriParams>(async (req, res) => {
+        const { file } = req.body;
+        const uploadedFile = await processUriUpload(file);
         res.status(200).json(uploadedFile);
       })
     );

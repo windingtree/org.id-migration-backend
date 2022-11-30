@@ -81,12 +81,15 @@ export const addJob = async (
     throw new ApiError(500, 'Request add failure');
   }
 
+  const orgIdVc = JSON.parse(job.data.orgIdVc);
+
   await requests.put(request.did, job.id);
 
   const requestStatus = {
     id: job.id,
     timestamp: job.timestamp,
     did: request.did,
+    newDid: orgIdVc.issuer,
     state: await getState(job),
   };
   logger.debug('requestState', requestStatus);
@@ -102,10 +105,13 @@ export const getJobStatus = async (id: string): Promise<RequestStatus> => {
     throw new ApiError(404, 'Not Found');
   }
 
+  const orgIdVc = JSON.parse(job.data.orgIdVc);
+
   const requestStatus = {
     id: job.id,
     timestamp: job.timestamp,
     did: job.data.did,
+    newDid: orgIdVc.issuer,
     state: await getState(job),
   };
   logger.debug('requestState', requestStatus);

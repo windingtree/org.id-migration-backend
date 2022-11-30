@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { Query } from 'express-serve-static-core';
+import { BufferTokenizer } from 'strtok3/lib/BufferTokenizer';
 import Logger from './logger';
 
 const logger = Logger('express');
 
 export const asyncHandler =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 
     <
       Params = unknown,
@@ -62,4 +64,74 @@ export const expressLogger = (
   };
 
   next();
+};
+
+// Returns file type from its buffer
+export const imageFileTypeFromBuffer = async (
+  tokenizer: BufferTokenizer
+): Promise<string> => {
+  const check = (buffer: Buffer, headers: any[], options: any) => {
+    options = {
+      offset: 0,
+      ...options,
+    };
+    for (const [index, header] of headers.entries()) {
+      // If a bitmask is set
+      if (options.mask) {
+        // If header doesn't equal `buf` with bits masked off
+        if (header !== (options.mask[index] & buffer[index + options.offset])) {
+          return false;
+        }
+      } else if (header !== buffer[index + options.offset]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const buf = Buffer.alloc(4100);
+
+  if (tokenizer.fileInfo.size === undefined) {
+    tokenizer.fileInfo.size = Number.MAX_SAFE_INTEGER;
+  }
+
+  await tokenizer.peekBuffer(buf, { length: 12, mayBeLess: true });
+
+  if (check(buf, [0x47, 0x49, 0x46], {})) {
+    return 'gif';
+  }
+
+  if (check(buf, [0x42, 0x4d], {})) {
+    return 'bmp';
+  }
+
+  if (check(buf, [0xff, 0xd8, 0xff], {})) {
+    return 'jpg';
+  }
+
+  if (check(buf, [0x42, 0x50, 0x47, 0xfb], {})) {
+    return 'bpg';
+  }
+
+  if (check(buf, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], {})) {
+    return 'png';
+  }
+
+  if (check(buf, [0x00, 0x00, 0x01, 0x00], {})) {
+    return 'ico';
+  }
+
+  if (check(buf, [0x00, 0x00, 0x02, 0x00], {})) {
+    return 'cur';
+  }
+
+  throw new Error('Unknown image type');
+};
+
+// Generates simple unique Id
+export const simpleUid = (length = 11): string => {
+  if (length < 5 || length > 11) {
+    throw new Error('length value must be between 5 and 11');
+  }
+  return Math.random().toString(16).substr(2, length);
 };

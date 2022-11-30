@@ -73,6 +73,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /fileUri:
+    post:
+      description: Files upload by its URI
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApiFileUriParams'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadedFile'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /dids/{owner}:
     get:
       description: Returns list of owned ORGiDs DIDs
@@ -297,6 +325,8 @@ components:
       properties:
         did:
           $ref: '#/components/schemas/Did'
+        newDid:
+          $ref: '#/components/schemas/Did'
         state:
           $ref: '#/components/schemas/RequestState'
       required:
@@ -331,6 +361,15 @@ components:
           $ref: '#/components/schemas/RequestId'
       required:
         - id
+    ApiFileUriParams:
+      description: In-body API /fileUri parameters
+      type: object
+      properties:
+        file:
+          description: File URI
+          type: string
+      required:
+        - file
     RequestId:
       description: Migration request Id
       type: string
@@ -371,12 +410,15 @@ components:
           type: number
         did:
           $ref: '#/components/schemas/Did'
+        newDid:
+          $ref: '#/components/schemas/Did'
         state:
           $ref: '#/components/schemas/RequestState'
       required:
         - id
         - timestamp
         - did
+        - newDid
         - state
     OrgJsonString:
       description: Serialized ORG.JSON doc

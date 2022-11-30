@@ -79,16 +79,19 @@ export const getOwnedWithState = async (owner: string): Promise<Dids> => {
   }
   return await Promise.all(
     owned.map(async (did) => {
-      let state: RequestState;
       try {
-        state = (await getRequestByDid(did)).state;
+        const { newDid, state } = await getRequestByDid(did);
+        return {
+          did,
+          newDid,
+          state,
+        };
       } catch {
-        state = RequestState.Ready;
+        return {
+          did,
+          state: RequestState.Ready,
+        };
       }
-      return {
-        did,
-        state,
-      };
     })
   );
 };
