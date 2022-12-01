@@ -59,7 +59,7 @@ export const expressLogger = (
   const origJson = res.json;
   res.json = (body) => {
     res.locals.body = body;
-    logger.debug(body);
+    // logger.debug(body);
     return origJson.call(res, body);
   };
 
