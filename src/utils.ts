@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from 'express';
 import { Query } from 'express-serve-static-core';
 import { BufferTokenizer } from 'strtok3/lib/BufferTokenizer';
@@ -6,28 +7,25 @@ import Logger from './logger';
 const logger = Logger('express');
 
 export const asyncHandler =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-
-    <
-      Params = unknown,
-      Body = unknown,
-      Q = Query,
-      Resp = unknown,
-      Locals extends Record<string, any> = Record<string, any>
-    >(
-      cb: (
-        req: Request<Params, Resp, Body, Q, Locals>,
-        res: Response<Resp>,
-        next: NextFunction
-      ) => void
-    ) =>
-    (
+  <
+    Params = unknown,
+    Body = unknown,
+    Q = Query,
+    Resp = unknown,
+    Locals extends Record<string, any> = Record<string, any>
+  >(
+    cb: (
       req: Request<Params, Resp, Body, Q, Locals>,
       res: Response<Resp>,
       next: NextFunction
-    ) =>
-      Promise.resolve(cb(req, res, next)).catch(next);
+    ) => void
+  ) =>
+  (
+    req: Request<Params, Resp, Body, Q, Locals>,
+    res: Response<Resp>,
+    next: NextFunction
+  ) =>
+    Promise.resolve(cb(req, res, next)).catch(next);
 
 export const expressLogger = (
   req: Request,
@@ -43,7 +41,9 @@ export const expressLogger = (
   res.once('finish', () => {
     logger.info(
       [
-        req.ip,
+        res.hasHeader('x-forwarded-for')
+          ? res.getHeader('x-forwarded-for')
+          : req.socket.remoteAddress || req.ip,
         req.method,
         req.originalUrl,
         JSON.stringify(req.params),
