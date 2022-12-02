@@ -34,7 +34,11 @@ export const expressLogger = (
 ) => {
   const startTime = process.hrtime();
 
-  if (req.originalUrl.match(/api\/health/i)) {
+  const ignoreChecks = [/api\/health/i, /api\/dids/i]
+    .map((r) => r.exec(req.originalUrl))
+    .find((c) => c !== null);
+
+  if (ignoreChecks) {
     return next();
   }
 
