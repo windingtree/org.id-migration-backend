@@ -25,7 +25,6 @@ import Logger from './logger';
 import { getHealthReport } from './api/health';
 import { getOrgJsonStringByDid, getOwnedWithState } from './api/orgid';
 import {
-  clean,
   addJob,
   getRequestByDid,
   getJobStatus,
@@ -113,18 +112,6 @@ export class Server {
       asyncHandler<unknown, unknown, unknown, Health>(async (_, res) => {
         const report = await getHealthReport();
         res.status(200).json(report);
-      })
-    );
-
-    // System reset
-    this.app.post(
-      '/api/clean',
-      asyncHandler(async (_req, res) => {
-        if (NODE_ENV !== 'development') {
-          throw new ApiError(405, 'Not Allowed');
-        }
-        await clean();
-        res.status(200).send();
       })
     );
 

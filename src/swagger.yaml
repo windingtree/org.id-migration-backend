@@ -29,18 +29,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /clean:
-    post:
-      description: System reset (on test only)
-      responses:
-        '200':
-          description: OK
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /file:
     post:
       description: Files upload

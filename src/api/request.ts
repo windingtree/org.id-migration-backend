@@ -1,6 +1,4 @@
-import { Queue, Job, Worker } from 'bullmq';
-import { Level } from 'level';
-import IORedis from 'ioredis';
+import { Job, Worker } from 'bullmq';
 import {
   verifyVC,
   SignedVC,
@@ -9,39 +7,12 @@ import {
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
 import { MigrationRequest, RequestState, RequestStatus } from '../types';
 import { ApiError } from '../errors';
-import { REDIS_OPTIONS } from '../config';
 import { getDstContract, validateBase } from './orgid';
 import { addJsonToIpfs } from '../ipfs';
+import { redisDb, requestKey, queueName, migrationQueue } from '../connection';
 import Logger from '../logger';
 
 const logger = Logger('request');
-
-const queueName = 'migration';
-
-export const connection = new IORedis({
-  ...REDIS_OPTIONS,
-  maxRetriesPerRequest: null,
-});
-
-export const migrationQueue = new Queue(queueName, {
-  connection,
-  defaultJobOptions: {
-    attempts: 30,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
-  },
-});
-
-export const requests = new Level<string, string>(`requests.level`);
-logger.info('requests.level DB connected');
-
-export const clean = async (): Promise<void> => {
-  await migrationQueue.obliterate();
-  await requests.clear();
-  logger.debug('Queue and requests DB are cleared');
-};
 
 export const getState = async (job: Job): Promise<RequestState> => {
   switch (await job.getState()) {
@@ -65,14 +36,7 @@ export const getState = async (job: Job): Promise<RequestState> => {
 export const addJob = async (
   request: MigrationRequest
 ): Promise<RequestStatus> => {
-  let jobId: string | undefined;
-
-  try {
-    // Check for request existence
-    jobId = await requests.get(request.did);
-  } catch {
-    // It is OK
-  }
+  const jobId = await redisDb.get(requestKey(request.did));
 
   if (jobId) {
     throw new ApiError(403, 'Duplicated request');
@@ -90,7 +54,7 @@ export const addJob = async (
 
   const orgIdVc = JSON.parse(job.data.orgIdVc);
 
-  await requests.put(request.did, job.id);
+  await redisDb.set(requestKey(request.did), job.id);
 
   const requestStatus = {
     id: job.id,
@@ -128,12 +92,11 @@ export const getJobStatus = async (id: string): Promise<RequestStatus> => {
 
 // Returns a request job by DID
 export const getRequestByDid = async (did: string): Promise<RequestStatus> => {
-  try {
-    const id = await requests.get(did);
-    return await getJobStatus(id);
-  } catch {
+  const id = await redisDb.get(requestKey(did));
+  if (!id) {
     throw new ApiError(404, 'Not Found');
   }
+  return await getJobStatus(id);
 };
 
 export const handleJobs = async (): Promise<void> => {
@@ -205,7 +168,7 @@ export const handleJobs = async (): Promise<void> => {
         }
       },
       {
-        connection,
+        connection: redisDb,
         autorun: true,
       }
     );

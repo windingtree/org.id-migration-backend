@@ -1,4 +1,3 @@
-import { Level } from 'level';
 import { utils, providers, Contract, Wallet } from 'ethers';
 import { ORGJSONVCNFT } from '@windingtree/org.json-schema/types/orgVc';
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
@@ -12,16 +11,7 @@ import {
 } from '../config';
 import { getRequestByDid } from './request';
 import { MNEMONIC } from '../config';
-
-export interface OrgId {
-  orgId: string;
-  orgIdNorm: string;
-  orgJsonUri: string;
-  parentOrgId: string;
-  owner: string;
-  isActive: boolean;
-  orgJson: Record<string, unknown> | null;
-}
+import { source } from '../connection';
 
 export const sourceOrgIdAbi = [
   'function getOrganizations(bool) external view returns (bytes32[] memory)',
@@ -33,10 +23,6 @@ export const destOrgIdApi = [
   'function getOrgId(uint256) external view returns (bool exists,bytes32 orgId,string orgJsonUri,address owner)',
   'function createOrgIdFor(bytes32,string,address,string[]) external',
 ];
-
-export const source = new Level<string, OrgId>(`${SRC_CONTRACT}.level`, {
-  valueEncoding: 'json',
-});
 
 export const getSrcContract = (): Contract => {
   const provider = new providers.JsonRpcProvider(SRC_PROVIDER);

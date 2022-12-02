@@ -1,4 +1,4 @@
-import { migrationQueue } from './connection';
+import { migrationQueue } from '../src/connection';
 
 const jobId = process.argv.slice(2)[0];
 
