@@ -25,6 +25,13 @@ export const connection = new IORedis({
 
 export const migrationQueue = new Queue(queueName, {
   connection,
+  defaultJobOptions: {
+    attempts: 30,
+    backoff: {
+      type: 'exponential',
+      delay: 1000,
+    },
+  },
 });
 
 export const requests = new Level<string, string>(`requests.level`);
