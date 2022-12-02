@@ -2,7 +2,7 @@ import path from 'path';
 import { readFile } from 'fs';
 import { DateTime } from 'luxon';
 import { Health } from '../types';
-import { connection } from './request';
+import { redisDb } from '../connection';
 
 export const getCommitHash = (): Promise<string> =>
   new Promise((resolve) => {
@@ -23,7 +23,7 @@ export const getCommitHash = (): Promise<string> =>
   });
 
 export const getRedisStatus = (): string =>
-  connection ? connection.status : 'disconnected';
+  redisDb ? redisDb.status : 'disconnected';
 
 export const getHealthReport = async (): Promise<Health> => ({
   commit: await getCommitHash(),
