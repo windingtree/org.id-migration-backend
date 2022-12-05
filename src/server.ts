@@ -16,8 +16,8 @@ import {
   Health,
   OrgJsonString,
 } from './types';
-import { NODE_ENV, PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
-import { ApiError, errorMiddleware } from './errors';
+import { PORT, ALLOWED_ORIGINS, SWAGGER_DOC } from './config';
+import { errorMiddleware } from './errors';
 import { asyncHandler, expressLogger } from './utils';
 import Logger from './logger';
 
@@ -51,7 +51,7 @@ export class Server {
       optionsSuccessStatus: 200,
       methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
       allowedHeaders:
-        'Origin,X-Requested-With,Content-Type,Accept,Authorization',
+        'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Forwarded-For,X-Real-Ip',
       exposedHeaders: 'Content-Range,X-Content-Range',
       credentials: true,
     };
