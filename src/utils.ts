@@ -45,10 +45,10 @@ export const expressLogger = (
   res.once('finish', () => {
     logger.info(
       [
-        res.hasHeader('x-forwarded-for')
-          ? res.getHeader('x-forwarded-for')
-          : res.hasHeader('x-real-ip')
-          ? res.getHeader('x-real-ip')
+        req.headers['x-forwarded-for']
+          ? req.headers['x-forwarded-for']
+          : req.headers['x-real-ip']
+          ? req.headers['x-real-ip']
           : req.socket.remoteAddress || req.ip,
         req.method,
         req.originalUrl,
