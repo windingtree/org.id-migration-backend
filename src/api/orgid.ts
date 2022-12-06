@@ -1,7 +1,7 @@
 import { utils, providers, Contract, Wallet } from 'ethers';
 import { ORGJSONVCNFT } from '@windingtree/org.json-schema/types/orgVc';
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
-import { MigrationRequest, Dids, RequestState } from '../types';
+import { MigrationRequest, Dids, RequestState, MigrationList } from '../types';
 import { ApiError } from '../errors';
 import {
   SRC_CONTRACT,
@@ -12,6 +12,7 @@ import {
 import { getRequestByDid } from './request';
 import { MNEMONIC } from '../config';
 import { source } from '../connection';
+import { ORGJSON } from '@windingtree/org.json-schema/types/org.json';
 
 export const sourceOrgIdAbi = [
   'function getOrganizations(bool) external view returns (bytes32[] memory)',
@@ -58,24 +59,49 @@ export const getOwned = async (owner: string): Promise<string[]> =>
     .map((record) => `did:orgid:${record.orgId}`);
 
 // Returns a list of ORGiDs DIDs with request state info
-export const getOwnedWithState = async (owner: string): Promise<Dids> => {
+export const getOwnedWithState = async (
+  owner: string
+): Promise<MigrationList> => {
   const owned = await getOwned(owner);
   if (owned.length === 0) {
     throw new ApiError(404, 'Not Found');
   }
   return await Promise.all(
     owned.map(async (did) => {
+      let logo: string | undefined;
+      let name: string;
+      try {
+        const { orgId } = parseDid(did);
+        const { orgJson } = await source.get(orgId);
+        if (orgJson) {
+          const org = orgJson as ORGJSON;
+          name =
+            org.legalEntity?.legalName ||
+            org.organizationalUnit?.name ||
+            'Unknown';
+          logo =
+            org.legalEntity?.media?.logo || org.organizationalUnit?.media?.logo;
+        } else {
+          throw new Error(`ORG.JSON for ${did} not found`);
+        }
+      } catch {
+        name = 'Unknown';
+      }
       try {
         const { newDid, state } = await getRequestByDid(did);
         return {
           did,
           newDid,
           state,
+          name,
+          logo,
         };
       } catch {
         return {
           did,
           state: RequestState.Ready,
+          name,
+          logo,
         };
       }
     })

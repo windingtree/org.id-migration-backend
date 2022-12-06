@@ -62,8 +62,19 @@ export interface DidWithState {
   state: RequestState;
 }
 
+/** Item of list of ORGiDs for migration */
+export type MigrationItem = DidWithState & {
+  /** Organization logotype */
+  logo?: string;
+  /** Organization name */
+  name: string;
+};
+
 /** List of ORGiDs DIDs */
 export type Dids = DidWithState[];
+
+/** List of items for migration */
+export type MigrationList = MigrationItem[];
 
 /** In-path API /owner/{address} parameters */
 export interface ApiOwnerParams {

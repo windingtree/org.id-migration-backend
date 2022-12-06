@@ -4,14 +4,14 @@ info:
   description: >-
     This is the interface documentation for the RESTful API interface for
     backend services of ORGiD migration backend server
-  version: 0.0.1
+  version: 1.0.0
 servers:
-  - url: http://localhost:3333/api
-    description: Local Testing server
   - url: https://api.test-orgid-migration.windingtree.com/api
     description: Staging server
   - url: https://api.orgid-migration.windingtree.com/api
     description: Production server
+  - url: http://localhost:3333/api
+    description: Local Testing server
 paths:
   /health:
     get:
@@ -104,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dids'
+                $ref: '#/components/schemas/MigrationList'
         '400':
           description: Bad Request
           content:
@@ -320,11 +320,30 @@ components:
       required:
         - did
         - state
+    MigrationItem:
+      description: Item of list of ORGiDs for migration
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/DidWithState'
+      properties:
+        logo:
+          description: Organization logotype
+          type: string
+        name:
+          description: Organization name
+          type: string
+      required:
+        - name
     Dids:
       description: List of ORGiDs DIDs
       type: array
       items:
         $ref: '#/components/schemas/DidWithState'
+    MigrationList:
+      description: List of items for migration
+      type: array
+      items:
+        $ref: '#/components/schemas/MigrationItem'
     ApiOwnerParams:
       description: In-path API /owner/{address} parameters
       type: object
