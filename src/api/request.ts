@@ -7,7 +7,7 @@ import {
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
 import { MigrationRequest, RequestState, RequestStatus } from '../types';
 import { ApiError } from '../errors';
-import { getDstContract, validateBase } from './orgid';
+import { getDstContract, getOwner, validateBase } from './orgid';
 import { addJsonToIpfs } from '../ipfs';
 import { redisDb, requestKey, queueName, migrationQueue } from '../connection';
 import Logger from '../logger';
@@ -53,6 +53,12 @@ export const addJob = async (
   }
 
   const orgIdVc = JSON.parse(job.data.orgIdVc);
+
+  // now we have validate the signer
+  const { orgId } = parseDid(request.did);
+  const owner = await getOwner(orgId);
+  await verifyVC(orgIdVc as SignedVC, `eip155:77:${owner}`);
+  logger.debug(`ORGiD VC of ${job.data.did} has been validated`);
 
   await redisDb.set(requestKey(request.did), job.id);
 

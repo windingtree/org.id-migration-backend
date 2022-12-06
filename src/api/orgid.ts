@@ -58,6 +58,17 @@ export const getOwned = async (owner: string): Promise<string[]> =>
     )
     .map((record) => `did:orgid:${record.orgId}`);
 
+// Return owner of the DID
+export const getOwner = async (orgId: string): Promise<string> => {
+  const org = (await source.values().all()).find(
+    (record) => record.orgId === orgId
+  );
+  if (!org) {
+    throw new Error(`Owner of ${orgId} not found`);
+  }
+  return utils.getAddress(org.orgId);
+};
+
 // Returns a list of ORGiDs DIDs with request state info
 export const getOwnedWithState = async (
   owner: string
