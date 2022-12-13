@@ -30,7 +30,11 @@ import {
   getJobStatus,
   handleJobs,
 } from './api/request';
-import { processUpload, processUriUpload } from './api/file';
+import {
+  processUpload,
+  processUriUpload,
+  processOrgIdVcUpload,
+} from './api/file';
 
 const logger = Logger('server');
 
@@ -188,6 +192,16 @@ export class Server {
           res.status(200).json(status);
         }
       )
+    );
+
+    // Save ORGiD VC to IPFS
+    this.app.post(
+      '/api/orgIdVc',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      asyncHandler<unknown, Record<string, any>>(async (req, res) => {
+        const uploadedFile = await processOrgIdVcUpload(req.body);
+        res.status(200).json(uploadedFile);
+      })
     );
   }
 
