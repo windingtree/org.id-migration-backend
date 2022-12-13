@@ -63,6 +63,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /file:
     post:
       description: Files upload
       requestBody:
