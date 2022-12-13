@@ -96,7 +96,8 @@ paths:
         required: true
         content:
           application/json:
-            type: object
+            schema:
+              type: object
       responses:
         '200':
           description: OK
