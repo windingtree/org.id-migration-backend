@@ -89,6 +89,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /orgIdVc:
+    post:
+      description: Validates and saving an ORGiD VC to IPFS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            type: object
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadedFile'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /dids/{owner}:
     get:
       description: Returns list of owned ORGiDs DIDs

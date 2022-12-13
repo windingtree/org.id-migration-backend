@@ -16,9 +16,13 @@ const main = async (): Promise<void> => {
   const httpServer = await server.start();
 
   // Graceful Shutdown handler
-  process.once('SIGTERM', async () => {
+  const shutdown = async () => {
     await server.stop();
-  });
+    process.exit(0);
+  };
+
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
 
   httpServer.on('error', (error) => {
     logger.error(error);

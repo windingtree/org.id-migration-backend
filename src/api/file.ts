@@ -3,8 +3,10 @@ import axios from 'axios';
 import { fromBuffer } from 'strtok3';
 import { UploadedFile } from '../types';
 import { ApiError } from '../errors';
-import { addBufferToIpfs } from '../ipfs';
+import { addBufferToIpfs, addJsonToIpfs } from '../ipfs';
 import { imageFileTypeFromBuffer, simpleUid } from '../utils';
+import { validateWithSchemaOrRef } from '@windingtree/org.id-utils/dist/object';
+import { orgVc } from '@windingtree/org.json-schema';
 
 export const processUpload = async (req: Request): Promise<UploadedFile> => {
   if (!req.files || req.files.length === 0) {
@@ -24,5 +26,19 @@ export const processUriUpload = async (uri: string): Promise<UploadedFile> => {
   const cid = await addBufferToIpfs(data, `${simpleUid()}.${fileType}`);
   return {
     url: `https://w3s.link/ipfs/${cid}`,
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const processOrgIdVcUpload = async (
+  rawOrgIdVc: Record<string, any>
+): Promise<UploadedFile> => {
+  const validationResult = validateWithSchemaOrRef(orgVc, '', rawOrgIdVc);
+  if (validationResult !== null) {
+    throw new ApiError(400, `Invalid ORGiD VC: ${validationResult}`);
+  }
+  const cid = await addJsonToIpfs(rawOrgIdVc, `${simpleUid()}.json`);
+  return {
+    url: `ipfs://${cid}`,
   };
 };
