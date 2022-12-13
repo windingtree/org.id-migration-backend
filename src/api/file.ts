@@ -43,7 +43,7 @@ export const processOrgIdVcUpload = async (
   };
 };
 
-export const getFileFromIpfs = async (cid: string): Promise<unknown> => {
-  const { data } = await axios.get<unknown>(`https://w3s.link/ipfs/${cid}`);
+export const getFileFromIpfs = async <T = unknown>(cid: string): Promise<T> => {
+  const { data } = await axios.get<T>(`https://w3s.link/ipfs/${cid}`);
   return data;
 };

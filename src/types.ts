@@ -114,7 +114,7 @@ export interface MigrationRequest {
   /** ORGiD DID */
   did: Did;
   /** Chain Id */
-  chain: 5 | 77 | 100 | 137;
+  chain: 5 | 77 | 100 | 137 | 502;
   /** Serialized ORGiD VC */
   orgIdVc: string;
 }
@@ -150,3 +150,18 @@ export interface UploadedFile {
   /** Url of the uploaded file */
   url: string;
 }
+
+/** Text file content */
+export type TextContent = string;
+
+/**
+ * Binary file content
+ * @format binary
+ */
+export type BinaryContent = File;
+
+/** JSON formatted content */
+export type JsonContent = object;
+
+/** File content fetched from IPFS */
+export type FetchedFile = TextContent | BinaryContent | JsonContent;
