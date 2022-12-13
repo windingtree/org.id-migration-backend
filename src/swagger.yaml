@@ -29,7 +29,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /file:
+  /file/{cid}:
+    get:
+      description: Getting of file from IPFS
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          type: string
+          pattern: '^((?:Qm|QM|qm|qM){1}[1-9A-Za-z]{44})|([bB]{1}[A-Za-z2-7]{58})|([zZ]{1}[1-9A-HJ-NP-Za-km-z]{48})$'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationList'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       description: Files upload
       requestBody:
@@ -372,6 +405,15 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/MigrationItem'
+    ApiFileParams:
+      description: In-path API /file/{cid} parameters
+      type: object
+      properties:
+        cid:
+          type: string
+          pattern: '^((?:Qm|QM|qm|qM){1}[1-9A-Za-z]{44})|([bB]{1}[A-Za-z2-7]{58})|([zZ]{1}[1-9A-HJ-NP-Za-km-z]{48})$'
+      required:
+        - cid
     ApiOwnerParams:
       description: In-path API /owner/{address} parameters
       type: object

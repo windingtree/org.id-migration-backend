@@ -1,7 +1,7 @@
 import { utils, providers, Contract, Wallet } from 'ethers';
 import { ORGJSONVCNFT } from '@windingtree/org.json-schema/types/orgVc';
 import { parseDid } from '@windingtree/org.id-utils/dist/parsers';
-import { MigrationRequest, Dids, RequestState, MigrationList } from '../types';
+import { MigrationRequest, RequestState, MigrationList } from '../types';
 import { ApiError } from '../errors';
 import {
   SRC_CONTRACT,

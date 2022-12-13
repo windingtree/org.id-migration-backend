@@ -29,8 +29,8 @@ export const processUriUpload = async (uri: string): Promise<UploadedFile> => {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processOrgIdVcUpload = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawOrgIdVc: Record<string, any>
 ): Promise<UploadedFile> => {
   const validationResult = validateWithSchemaOrRef(orgVc, '', rawOrgIdVc);
@@ -41,4 +41,9 @@ export const processOrgIdVcUpload = async (
   return {
     url: `ipfs://${cid}`,
   };
+};
+
+export const getFileFromIpfs = async (cid: string): Promise<unknown> => {
+  const { data } = await axios.get<unknown>(`https://w3s.link/ipfs/${cid}`);
+  return data;
 };

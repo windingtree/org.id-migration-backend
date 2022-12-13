@@ -47,7 +47,8 @@
     "@windingtree/org.id-auth": "^1.2.4",
     "swagger-typescript-api": "^12.0.2",
     "multer": "2.0.0-rc.4",
-    "strtok3": "^7.0.0"
+    "strtok3": "^7.0.0",
+    "axios": "^1.2.1"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",

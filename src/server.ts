@@ -11,6 +11,7 @@ import {
   ApiDidParams,
   ApiRequestParams,
   ApiFileUriParams,
+  ApiFileParams,
   MigrationRequest,
   RequestStatus,
   Health,
@@ -34,6 +35,7 @@ import {
   processUpload,
   processUriUpload,
   processOrgIdVcUpload,
+  getFileFromIpfs,
 } from './api/file';
 
 const logger = Logger('server');
@@ -119,7 +121,15 @@ export class Server {
       })
     );
 
-    // Files upload
+    // Files getting and uploads
+    this.app.get(
+      '/api/file',
+      asyncHandler<ApiFileParams>(async (req, res) => {
+        const { cid } = req.params;
+        const data = await getFileFromIpfs(cid);
+        res.status(200).send(data);
+      })
+    );
     this.app.post(
       '/api/file',
       upload.single('file'),
