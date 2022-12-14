@@ -4,9 +4,12 @@ import { fromBuffer } from 'strtok3';
 import { UploadedFile } from '../types';
 import { ApiError } from '../errors';
 import { addBufferToIpfs, addJsonToIpfs } from '../ipfs';
-import { imageFileTypeFromBuffer, simpleUid } from '../utils';
+import { imageFileTypeFromBuffer, paramsSerializer, simpleUid } from '../utils';
 import { validateWithSchemaOrRef } from '@windingtree/org.id-utils/dist/object';
 import { orgVc } from '@windingtree/org.json-schema';
+import { ORGJSON } from '@windingtree/org.json-schema/types/org.json';
+import { DidResolutionResponse } from '@windingtree/org.id-resolver';
+import { VALIDATOR_URI } from '../config';
 
 export const processUpload = async (req: Request): Promise<UploadedFile> => {
   if (!req.files || req.files.length === 0) {
@@ -46,4 +49,23 @@ export const processOrgIdVcUpload = async (
 export const getFileFromIpfs = async <T = unknown>(cid: string): Promise<T> => {
   const { data } = await axios.get<T>(`https://w3s.link/ipfs/${cid}`);
   return data;
+};
+
+export const getOrgJsonFromOrgId = async (did: string): Promise<ORGJSON> => {
+  const { data } = await axios.get<{
+    resolutionResponse: DidResolutionResponse;
+  }>(`${VALIDATOR_URI}/orgid`, {
+    params: { orgid: did },
+    paramsSerializer: {
+      serialize: paramsSerializer,
+    },
+  });
+  if (!data.resolutionResponse.didDocument) {
+    throw new ApiError(
+      400,
+      data.resolutionResponse.didResolutionMetadata.error ??
+        'Unknown ORGiD resolution error'
+    );
+  }
+  return data.resolutionResponse.didDocument;
 };

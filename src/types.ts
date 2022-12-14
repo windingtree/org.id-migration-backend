@@ -78,8 +78,8 @@ export type MigrationList = MigrationItem[];
 
 /** In-path API /file/{cid} parameters */
 export interface ApiFileParams {
-  /** @pattern ^((?:Qm|QM|qm|qM){1}[1-9A-Za-z]{44})|([bB]{1}[A-Za-z2-7]{58})|([zZ]{1}[1-9A-HJ-NP-Za-km-z]{48})$ */
-  cid: string;
+  /** ORGiD DID */
+  did: Did;
 }
 
 /** In-path API /owner/{address} parameters */

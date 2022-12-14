@@ -36,7 +36,7 @@ import {
   processUpload,
   processUriUpload,
   processOrgIdVcUpload,
-  getFileFromIpfs,
+  getOrgJsonFromOrgId,
 } from './api/file';
 
 const logger = Logger('server');
@@ -124,12 +124,12 @@ export class Server {
 
     // Files getting and uploads
     this.app.get(
-      '/api/file/:cid',
-      asyncHandler<ApiFileParams, unknown, unknown, FetchedFile>(
+      '/api/profile',
+      asyncHandler<unknown, unknown, ApiFileParams, FetchedFile>(
         async (req, res) => {
-          const { cid } = req.params;
-          const data = await getFileFromIpfs<FetchedFile>(cid);
-          res.status(200).send(data);
+          const { did } = req.query;
+          const data = await getOrgJsonFromOrgId(did);
+          res.status(200).json(data);
         }
       )
     );

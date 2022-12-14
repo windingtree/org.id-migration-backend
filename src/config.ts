@@ -31,6 +31,7 @@ checkEnvVariables([
   'SRC_PROVIDER',
   'W3S_KEY',
   'MIGRATOR_MNEMONIC',
+  'VALIDATOR_URI',
 ]);
 
 export const NODE_ENV = process.env.NODE_ENV || '';
@@ -102,3 +103,5 @@ export const SWAGGER_DOC = YAML.load(
 export const W3S_KEY = process.env.W3S_KEY || '';
 
 export const MNEMONIC = process.env.MIGRATOR_MNEMONIC;
+
+export const VALIDATOR_URI = process.env.VALIDATOR_URI || '';
