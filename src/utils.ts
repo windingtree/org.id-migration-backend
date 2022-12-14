@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Query } from 'express-serve-static-core';
 import { BufferTokenizer } from 'strtok3/lib/BufferTokenizer';
+import Qs from 'qs';
 import Logger from './logger';
 
 const logger = Logger('express');
@@ -141,3 +142,6 @@ export const simpleUid = (length = 11): string => {
   }
   return Math.random().toString(16).substr(2, length);
 };
+
+export const paramsSerializer = (params: Record<string, string>): string =>
+  Qs.stringify(params, { arrayFormat: 'brackets' });

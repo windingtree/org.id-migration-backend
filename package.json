@@ -45,10 +45,12 @@
     "@windingtree/org.json-schema": "^1.1.0",
     "@windingtree/org.id-utils": "^1.2.4",
     "@windingtree/org.id-auth": "^1.2.4",
+    "@windingtree/org.id-resolver": "^3.2.2",
     "swagger-typescript-api": "^12.0.2",
     "multer": "2.0.0-rc.4",
     "strtok3": "^7.0.0",
-    "axios": "^1.2.1"
+    "axios": "^1.2.1",
+    "qs": "^6.11.0"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
