@@ -45,20 +45,19 @@ export const addJob = async (
   await validateBase(request);
   logger.debug(`Request for ${request.did} has been validated`);
 
+  // now we have validate the signer
+  const orgIdVc = JSON.parse(request.orgIdVc);
+  const { orgId } = parseDid(request.did);
+  const owner = await getOwner(orgId);
+  await verifyVC(orgIdVc as SignedVC, `eip155:77:${owner}`);
+  logger.debug(`ORGiD VC of ${request.did} has been validated`);
+
   const job = await migrationQueue.add('migrate', request);
-  logger.debug(`Request for ${request} has been added to the queue`);
 
   if (!job.id) {
     throw new ApiError(500, 'Request add failure');
   }
-
-  const orgIdVc = JSON.parse(job.data.orgIdVc);
-
-  // now we have validate the signer
-  const { orgId } = parseDid(request.did);
-  const owner = await getOwner(orgId);
-  await verifyVC(orgIdVc as SignedVC, `eip155:77:${owner}`);
-  logger.debug(`ORGiD VC of ${job.data.did} has been validated`);
+  logger.debug(`Request for ${request.did} has been added to the queue`);
 
   await redisDb.set(requestKey(request.did), job.id);
 

@@ -66,7 +66,7 @@ export const getOwner = async (orgId: string): Promise<string> => {
   if (!org) {
     throw new Error(`Owner of ${orgId} not found`);
   }
-  return utils.getAddress(org.orgId);
+  return utils.getAddress(org.owner);
 };
 
 // Returns a list of ORGiDs DIDs with request state info
