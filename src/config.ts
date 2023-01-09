@@ -69,10 +69,10 @@ export const CHAINS: ChainConfig[] = [
       'https://eth-goerli.g.alchemy.com/v2/aw5WyUmvvU_Uf4fI8nDj51Nx0QeUJ0lr',
   },
   {
-    name: 'Sokol',
-    chainId: '77',
-    orgIdAddress: '0xDd1231c0FD9083DA42eDd2BD4f041d0a54EF7BeE',
-    providerUri: 'https://sokol.poa.network',
+    name: 'Chiado',
+    chainId: '10200',
+    orgIdAddress: '0xaa727223949Bf082a8AFcb29B34B358d9bad8736',
+    providerUri: 'https://rpc.chiadochain.net',
   },
 ];
 

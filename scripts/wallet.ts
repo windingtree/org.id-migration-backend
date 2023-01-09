@@ -22,11 +22,14 @@ export const accountsListFromMnemonic = (
 };
 
 export const main = async (): Promise<void> => {
-  // const mnemonic = generateMnemonic();
-  // console.log('Mnemonic:', mnemonic);
-
-  const wallet = Wallet.fromMnemonic(process.env.MIGRATOR_MNEMONIC as string);
+  const mnemonic = generateMnemonic();
+  console.log('Mnemonic:', mnemonic);
+  const wallet = Wallet.fromMnemonic(mnemonic as string);
   console.log('Account address:', wallet.address);
+  console.log('PK:', wallet.privateKey);
+
+  // const wallet = Wallet.fromMnemonic(process.env.MIGRATOR_MNEMONIC as string);
+  // console.log('Account address:', wallet.address);
 };
 
 main().catch(console.log);
