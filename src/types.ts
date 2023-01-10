@@ -114,7 +114,7 @@ export interface MigrationRequest {
   /** ORGiD DID */
   did: Did;
   /** Chain Id */
-  chain: 5 | 77 | 100 | 137 | 502;
+  chain: 5 | 10200 | 100 | 137 | 502;
   /** Serialized ORGiD VC */
   orgIdVc: string;
 }

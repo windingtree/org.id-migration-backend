@@ -459,7 +459,7 @@ components:
         chain:
           description: Chain Id
           type: number
-          enum: [5, 77, 100, 137, 502]
+          enum: [5, 10200, 100, 137, 502]
         orgIdVc:
           description: Serialized ORGiD VC
           type: string
